@@ -321,8 +321,11 @@ function press(x,y){au();
   if(state==='dead'){if(deadT<PANEL){if(deadT>.25)deadT=PANEL;return}if(deadT<PANEL+.35)return;if(x!=null&&inR(UI.share,x,y)){shareDown=true;return}if(x!=null&&inR(UI.rank,x,y)){openRank();return}restart()}}
 cv.addEventListener('pointerdown',e=>{e.preventDefault();press(e.clientX,e.clientY)},{passive:false});
 cv.addEventListener('pointerup',e=>{if(shareDown){shareDown=false;if(inR(UI.share,e.clientX,e.clientY))doShare()}});
-addEventListener('keydown',e=>{if(e.repeat||anyOverlay())return;if(['Space','ArrowUp','ArrowDown','KeyW','KeyS','Enter'].includes(e.code)){e.preventDefault();press(null,null)}else if(e.code==='KeyM'){muted=!muted;save()}else if(e.code==='KeyP'&&state==='play'){if(paused){paused=false;resumeCD=1.2}else if(resumeCD<=0){paused=true;cgPlay(false)}}});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play'&&!paused){paused=true;cgPlay(false)}});
+addEventListener('keydown',e=>{if(e.code==='Escape'&&anyOverlay()){for(const el of document.querySelectorAll('.ov.on,#sharebox.on'))el.classList.remove('on');return}if(e.repeat||anyOverlay())return;if(['Space','ArrowUp','ArrowDown','KeyW','KeyS','Enter'].includes(e.code)){e.preventDefault();press(null,null)}else if(e.code==='KeyM'){muted=!muted;save()}else if((e.code==='KeyP'||e.code==='Escape')&&state==='play'){if(e.code==='Escape')e.preventDefault();if(paused){paused=false;resumeCD=1.2;tone(660,660,.08,'triangle',.08)}else if(resumeCD<=0)autoPause()}});
+function autoPause(){if(state==='play'&&!paused){paused=true;resumeCD=0;cgPlay(false);tone(500,300,.1,'triangle',.08)}}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)autoPause()});
+/* Escape also leaves fullscreen: when fullscreen ends mid-run, pause so the run is never lost */
+for(const ev of ['fullscreenchange','webkitfullscreenchange'])document.addEventListener(ev,()=>{if(!(document.fullscreenElement||document.webkitFullscreenElement))autoPause()});
 addEventListener('contextmenu',e=>e.preventDefault());
 
 /* ---------- update ---------- */
